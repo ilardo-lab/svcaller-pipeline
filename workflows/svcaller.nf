@@ -1,3 +1,6 @@
+// Check mandatory parameters
+if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
@@ -33,6 +36,7 @@ workflow SVCALLER {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
+
     //
     // MODULE: Run FastQC
     //
@@ -48,6 +52,16 @@ workflow SVCALLER {
     softwareVersionsToYAML(ch_versions)
         .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_pipeline_software_mqc_versions.yml', sort: true, newLine: true)
         .set { ch_collated_versions }
+
+    //
+    // MODULE: Minimap2/Align
+    //
+    MINIMAP2_ALIGN(ch_samplesheet, params.fasta, true, false, false)
+
+    //
+    // MODULE: Minimap2/Index
+    //
+    // MINIMAP2_INDEX(params.fasta)
 
     //
     // MODULE: MultiQC
@@ -70,10 +84,6 @@ workflow SVCALLER {
         ch_multiqc_logo.toList()
     )
 
-    // emit:
-    // multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    // versions       = ch_versions                 // channel: [ path(versions.yml) ]
-
     //
     // MODULE: Minimap2/Index
     //
@@ -82,7 +92,7 @@ workflow SVCALLER {
     //
     // MODULE: Minimap2/Align
     //
-    MINIMAP2_ALIGN(ch_samplesheet, params.fasta, true, false, false)
+    // MINIMAP2_ALIGN(ch_samplesheet, params.fasta, true, false, false)
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
