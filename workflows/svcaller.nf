@@ -11,6 +11,12 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_svcaller_pipeline'
 
+include { MINIMAP2_INDEX         } from '../modules/nf-core/minimap2/index/main'
+include { MINIMAP2_ALIGN         } from '../modules/nf-core/minimap2/align/main'
+include { SAMTOOLS_SORT          } from '../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_INDEX         } from '../modules/nf-core/samtools/index/main'
+include { SNIFFLES               } from '../modules/nf-core/sniffles/main'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -63,6 +69,20 @@ workflow SVCALLER {
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
     )
+
+    // emit:
+    // multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    // versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
+    //
+    // MODULE: Minimap2/Index
+    //
+    // MINIMAP2_INDEX(params.fasta)
+
+    //
+    // MODULE: Minimap2/Align
+    //
+    MINIMAP2_ALIGN(ch_samplesheet, params.fasta, true, false, false)
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
